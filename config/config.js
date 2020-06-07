@@ -1,0 +1,1 @@
+module.exports.SEED = 'pedon-muma-exe';
