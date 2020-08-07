@@ -5,11 +5,29 @@ var SEED = require('../config/config').SEED;
 
 var app = express();
 var Usuario = require('../models/usuario');
+var Medico = require('../models/medico');
 
 // Google
 var CLIENT_ID = require('../config/config').CLIENT_ID;
 const { OAuth2Client } = require('google-auth-library');
+const usuario = require('../models/usuario');
 const client = new OAuth2Client(CLIENT_ID);
+
+// Middleware
+var mdAutenticacion = require('../middlewares/autenticacion');
+
+// Renueva Token
+app.get('/renuevaToken', mdAutenticacion.verificaToken, (req, res) => {
+
+    var token = jwt.sign({ usuario: req.usuario }, SEED, { expiresIn: 14400 });
+
+    res.status(200).json({
+        ok: true,
+        token: token
+    });
+
+});
+
 
 // Autenticacion de Google
 
@@ -72,12 +90,13 @@ app.post('/google', async (req, res) => {
                     ok: true,
                     usuario: usuarioDB,
                     token: token,
+                    menu: obtenerMenu(usuarioDB.role),
                     mensaje: 'Login correcto'
                 });
 
             }
 
-        }else{
+        } else {
 
             // Usuario no existe hay que crearlo
             var usuario = new Usuario();
@@ -95,6 +114,7 @@ app.post('/google', async (req, res) => {
                     ok: true,
                     usuario: usuario,
                     token: token,
+                    menu: obtenerMenu(usuarioDB.role),
                     mensaje: 'Login correcto'
                 });
 
@@ -104,12 +124,6 @@ app.post('/google', async (req, res) => {
 
     });
 
-    // res.status(200).json({
-    //     ok: true,
-    //     mensaje: 'Login correcto',
-    //     googleUser: googleUser
-    // });
-
 });
 
 // Autenticacion normal
@@ -117,15 +131,15 @@ app.post('/', (req, res) => {
 
     var body = req.body;
 
-    Usuario.findOne({ email: body.email }, (err, usuarioDB) => {
+    Medico.findOne({ correo: body.correo }, (err, medicoDB) => {
 
         if (err) {
             return res.status(500).json({
                 ok: false,
-                mensaje: 'Error al buscar usuario',
+                mensaje: 'Error al buscar medico',
                 errors: err
             });
-        } else if (!usuarioDB) {
+        } else if (!medicoDB) {
             return res.status(400).json({
                 ok: false,
                 mensaje: 'Email incorrecto',
@@ -133,7 +147,7 @@ app.post('/', (req, res) => {
             });
         }
 
-        if (!bcrypt.compareSync(body.password, usuarioDB.password)) {
+        if (!bcrypt.compareSync(body.password, medicoDB.password)) {
             return res.status(400).json({
                 ok: false,
                 mensaje: 'Contraseña incorrecta',
@@ -142,12 +156,12 @@ app.post('/', (req, res) => {
         }
 
         // Crear un token
-        usuarioDB.password = ':)';
-        var token = jwt.sign({ usuario: usuarioDB }, SEED, { expiresIn: 14400 }); //4 horas
+        medicoDB.password = ':)';
+        var token = jwt.sign({ medico: medicoDB }, SEED, { expiresIn: 14400 }); //4 horas
 
         res.status(200).json({
             ok: true,
-            usuario: usuarioDB,
+            medico: medicoDB,
             token: token,
             mensaje: 'Login correcto'
         });
@@ -155,5 +169,37 @@ app.post('/', (req, res) => {
     });
 
 });
+
+function obtenerMenu(ROLE){
+
+    var menu = [
+        {
+          titulo: 'Principal',
+          icono: 'mdi mdi-gauge',
+          submenu: [
+            { titulo: 'Dashboard', url: '/dashboard' },
+            { titulo: 'ProgressBar', url: '/progress' },
+            { titulo: 'Graficas', url: '/graficas1' },
+            { titulo: 'Promesas', url: '/promesas' },
+            { titulo: 'Rxjs', url: '/rxjs' }
+          ]
+        },
+        {
+          titulo: 'Mantenimiento',
+          icono: 'mdi mdi-folder-lock-open',
+          submenu: [
+            { titulo: 'Hospitales', url: '/hospitales' },
+            { titulo: 'Medicos', url: '/medicos' }
+          ]
+        }
+      ];
+
+      if(ROLE === 'ADMIN_ROLE'){
+          menu[1].submenu.unshift({ titulo: 'Usuarios', url: '/usuarios' });
+      }
+
+    return menu;
+
+}
 
 module.exports = app;

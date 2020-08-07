@@ -2,12 +2,14 @@ var express = require('express');
 
 var app = express();
 
+var mdAutenticacion = require('../middlewares/autenticacion');
+
 var Hospital = require('../models/hospital');
 var Medico = require('../models/medico');
 var Usuario = require('../models/usuario');
 
 // BUSQUEDA POR COLECCION
-app.get('/coleccion/:coleccion/:busqueda', (req, res, next) => {
+app.get('/coleccion/:coleccion/:busqueda', mdAutenticacion.verificaToken, (req, res, next) => {
     var coleccion = req.params.coleccion;
     var busqueda = req.params.busqueda;
     var regex = new RegExp(busqueda, 'i');
@@ -19,7 +21,7 @@ app.get('/coleccion/:coleccion/:busqueda', (req, res, next) => {
             buscarHospitales(busqueda, regex).then(respuestas => {
                 res.status(200).json({
                     ok: true,
-                    hospitales: respuestas[0],
+                    hospitales: respuestas
                 });
             });
             break;
@@ -28,7 +30,7 @@ app.get('/coleccion/:coleccion/:busqueda', (req, res, next) => {
             buscarMedicos(busqueda, regex).then(respuestas => {
                 res.status(200).json({
                     ok: true,
-                    medicos: respuestas[0],
+                    medicos: respuestas
                 });
             });
             break;
@@ -37,7 +39,7 @@ app.get('/coleccion/:coleccion/:busqueda', (req, res, next) => {
             buscarUsuarios(busqueda, regex).then(respuestas => {
                 res.status(200).json({
                     ok: true,
-                    usuarios: respuestas[0],
+                    usuarios: respuestas
                 });
             });
             break;
@@ -53,7 +55,7 @@ app.get('/coleccion/:coleccion/:busqueda', (req, res, next) => {
 });
 
 // BUSQUEDA GENERAL
-app.get('/todo/:busqueda', (req, res, next) => {
+app.get('/todo/:busqueda', mdAutenticacion.verificaToken, (req, res, next) => {
 
     var busqueda = req.params.busqueda;
     var regex = new RegExp(busqueda, 'i');
@@ -120,8 +122,8 @@ function buscarUsuarios(busqueda, regex) {
 
     return new Promise((resolve, reject) => {
 
-        Usuario.find({}, 'nombre email')
-            .or([{ 'nombre': regex }, { 'email': regex }])
+        Usuario.find({}, 'nombre email rut')
+            .or([{ 'nombre': regex }, { 'rut': regex }])
             .exec((err, usuarios) => {
 
                 if (err) {

@@ -2,10 +2,12 @@ var express = require('express');
 
 var app = express();
 
+var mdAutenticacion = require('../middlewares/autenticacion');
+
 const path = require('path');
 const fs = require('fs');
 
-app.get('/:tipo/:img', (req, res, next) => {
+app.get('/:tipo/:img', mdAutenticacion.verificaToken, (req, res, next) => {
 
     var tipo = req.params.tipo;
     var img = req.params.img;

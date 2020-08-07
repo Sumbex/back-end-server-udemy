@@ -9,14 +9,9 @@ var app = express();
 var Usuario = require('../models/usuario');
 
 // OBTENER TODOS LOS USUARIOS
-app.get('/', (req, res, next) => {
+app.get('/', mdAutenticacion.verificaToken, (req, res, next) => {
 
-    var desde = req.query.desde || 0;
-    desde = Number(desde);
-
-    Usuario.find({}, 'nombre email img role')
-        .skip(desde)
-        .limit(5)
+    Usuario.find({})
         .exec(
 
             (err, usuarios) => {
@@ -43,6 +38,36 @@ app.get('/', (req, res, next) => {
 
 });
 
+// OBTENER UN PACIENTE
+app.get('/:id', mdAutenticacion.verificaToken, (req, res) => {
+
+    var id = req.params.id;
+
+    Usuario.findById(id)
+        .exec((err, paciente) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error al buscar paciente',
+                    errors: err
+                });
+            } if (!paciente) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: `El paciente con el id: ${id} no existe`,
+                    errors: { message: 'No existe un paciente con ese ID' }
+                });
+            }
+    
+            return res.status(200).json({
+                ok: true,
+                paciente: paciente
+            });
+    
+        });
+
+});
+
 // ACTUALIZAR USUARIO
 app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
 
@@ -65,8 +90,16 @@ app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
         }
 
         usuario.nombre = body.nombre;
+        usuario.rut = body.rut;
+        usuario.fechaNacimiento = body.fechaNacimiento;
+        usuario.genero = body.genero;
+        usuario.numeroContacto = body.numeroContacto;
+        usuario.numeroFamiliar = body.numeroFamiliar;
         usuario.email = body.email;
-        usuario.role = body.role;
+        usuario.residencia = body.residencia;
+        usuario.alergias = body.alergias;
+        usuario.enfermedades = body.enfermedades;
+        usuario.password = body.password;
 
         usuario.save((err, usuarioGuardado) => {
             if (err) {
@@ -91,14 +124,21 @@ app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
 });
 
 // CREAR UN NUEVO USUARIO
-app.post('/', mdAutenticacion.verificaToken, (req, res) => {
+app.post('/' , mdAutenticacion.verificaToken, (req, res) => {
 
     var body = req.body;
 
     var usuario = new Usuario({
         nombre: body.nombre,
         email: body.email,
-        password: bcrypt.hashSync(body.password, 10),
+        rut: body.rut,
+        fechaNacimiento: body.fechaNacimiento,
+        genero: body.genero,
+        numeroContacto: body.numeroContacto,
+        numeroFamiliar: body.numeroFamiliar,
+        residencia: body.residencia,
+        alergias: body.alergias,
+        enfermedades: body.enfermedades,
         img: body.img,
         role: body.role
     });
@@ -121,7 +161,7 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
 });
 
 // ELIMINAR USUARIO POR ID
-app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
+app.delete('/:id', [mdAutenticacion.verificaToken, mdAutenticacion.verificaAdmin], (req, res) => {
 
     var id = req.params.id;
 
