@@ -51,7 +51,7 @@ async function verify(token) {
     }
 
 }
-verify().catch(console.error);
+// verify().catch(console.error);
 
 app.post('/google', async (req, res) => {
 
