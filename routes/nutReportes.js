@@ -16,6 +16,7 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
         peso: body.peso,
         altura: body.altura,
         usuario: body.usuario,
+        medico: req.medico._id
     });
 
     reporte.save((err, reporteGuardado) => {
@@ -42,6 +43,7 @@ app.get('/', mdAutenticacion.verificaToken, (req, res) => {
 
     NutReporte.find({ usuario: idPaciente })
         .populate('usuario', 'nombre email')
+        .populate('medico', '_id nombre')
         .exec(
             (err, reportes) => {
                 if (err) {
@@ -62,6 +64,36 @@ app.get('/', mdAutenticacion.verificaToken, (req, res) => {
             }
         )
 });
+
+// OBTENER REPORTES POR MEDICO
+app.get('/PorMedico/', mdAutenticacion.verificaToken, (req, res) => {
+
+    var idMedico = req.query.idMedico;
+
+    NutReporte.find({ medico: idMedico })
+        .populate('usuario', 'nombre email')
+        .populate('medico', '_id nombre')
+        .exec(
+            (err, reportes) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error cargando reportes de nutricion',
+                        errors: err
+                    });
+                }
+
+                NutReporte.count({}, (err, total) => {
+                    res.status(200).json({
+                        ok: true,
+                        reportes: reportes,
+                        total: total
+                    });
+                });
+            }
+        )
+});
+
 
 // OBTENER UN REPORTE
 app.get('/:id', mdAutenticacion.verificaToken, (req, res) => {

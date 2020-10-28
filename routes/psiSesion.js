@@ -14,6 +14,7 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
     var sesion = new PsiSesion({
         contenido: body.contenido,
         usuario: body.usuario,
+        medico: req.medico._id
     });
 
     sesion.save((err, sesionGuardada) => {
@@ -40,6 +41,36 @@ app.get('/', mdAutenticacion.verificaToken, (req, res) => {
 
     PsiSesion.find({ usuario: idPaciente })
         .populate('usuario', 'nombre email')
+        .populate('medico', '_id nombre')
+        .exec(
+            (err, sesiones) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error cargando sesiones',
+                        errors: err
+                    });
+                }
+
+                PsiSesion.count({}, (err, total) => {
+                    res.status(200).json({
+                        ok: true,
+                        sesiones: sesiones,
+                        total: total
+                    });
+                });
+            }
+        )
+});
+
+// OBTENER SESIONES POR MEDICO
+app.get('/PorMedico/', mdAutenticacion.verificaToken, (req, res) => {
+
+    var idMedico = req.query.idMedico;
+
+    PsiSesion.find({ medico: idMedico })
+        .populate('usuario', 'nombre email')
+        .populate('medico', '_id nombre')
         .exec(
             (err, sesiones) => {
                 if (err) {

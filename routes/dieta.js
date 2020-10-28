@@ -14,6 +14,7 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
     var dieta = new Dieta({
         contenido: body.contenido,
         usuario: body.usuario,
+        medico: req.medico._id
     });
 
     dieta.save((err, dietaGuardada) => {
@@ -45,6 +46,36 @@ app.get('/', mdAutenticacion.verificaToken, (req, res) => {
         .skip(desde)
         .limit(5)
         .populate('usuario', 'nombre email')
+        .populate('medico', '_id nombre')
+        .exec(
+            (err, dietas) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error cargando dietas',
+                        errors: err
+                    });
+                }
+
+                Dieta.count({}, (err, total) => {
+                    res.status(200).json({
+                        ok: true,
+                        dietas: dietas,
+                        total: total
+                    });
+                });
+            }
+        )
+});
+
+// OBTENER DIETA POR MEDICO
+app.get('/PorMedico/', mdAutenticacion.verificaToken, (req, res) => {
+
+    var idMedico = req.query.idMedico;
+
+    Dieta.find({ medico: idMedico })
+        .populate('usuario', 'nombre email')
+        .populate('medico', '_id nombre')
         .exec(
             (err, dietas) => {
                 if (err) {

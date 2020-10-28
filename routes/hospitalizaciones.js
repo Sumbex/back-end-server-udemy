@@ -69,7 +69,7 @@ app.get('/PorMedico', mdAutenticacion.verificaToken, (req, res) => {
 
     var idMedico = req.query.idMedico;
 
-    Hospitalizacion.find({ usuario: idMedico })
+    Hospitalizacion.find({ medico: idMedico })
         .populate('usuario', 'nombre email')
         .populate('medico', '_id nombre')
         .exec(
