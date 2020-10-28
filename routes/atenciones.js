@@ -13,6 +13,7 @@ app.get('/porPaciente/', mdAutenticacion.verificaToken, (req, res) => {
 
     Atencion.find({ usuario: idPaciente })
         .populate('usuario', 'nombre email')
+        .populate('medico', '_id nombre')
         .exec(
             (err, atenciones) => {
                 if (err) {
@@ -39,8 +40,9 @@ app.get('/porMedico/', mdAutenticacion.verificaToken, (req, res) => {
 
     var idMedico = req.query.idMedico;
 
-    Atencion.find({ usuario: idMedico })
+    Atencion.find({ medico: idMedico })
         .populate('usuario', 'nombre email')
+        .populate('medico', '_id nombre')
         .exec(
             (err, atenciones) => {
                 if (err) {
@@ -102,7 +104,8 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
     var atencion = new Atencion({
         motivo: body.motivo,
         usuario: body.usuario,
-        estado: 1
+        estado: 1,
+        medico: req.medico._id
     });
 
     atencion.save((err, atencionGuardada) => {
@@ -115,7 +118,7 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
         } else {
             res.status(201).json({
                 ok: true,
-                body: atencionGuardada,
+                body: atencionGuardada
             });
         }
     });
@@ -143,12 +146,12 @@ app.get('/:id', mdAutenticacion.verificaToken, (req, res) => {
                     errors: { message: 'No existe un medico con ese ID' }
                 });
             }
-    
+
             return res.status(200).json({
                 ok: true,
                 atencion: atencion
             });
-    
+
         });
 
 });

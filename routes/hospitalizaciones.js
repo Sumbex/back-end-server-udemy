@@ -14,7 +14,8 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
     var hospitalizacion = new Hospitalizacion({
         motivo: body.motivo,
         atencion: body.atencion,
-        usuario: body.usuario
+        usuario: body.usuario,
+        medico: req.medico._id
     });
 
     hospitalizacion.save((err, hospitalizacionGuardada) => {
@@ -41,6 +42,7 @@ app.get('/PorPaciente', mdAutenticacion.verificaToken, (req, res) => {
 
     Hospitalizacion.find({ usuario: idPaciente })
         .populate('usuario', 'nombre email')
+        .populate('medico', '_id nombre')
         .exec(
             (err, hospitalizaciones) => {
                 if (err) {
@@ -69,6 +71,7 @@ app.get('/PorMedico', mdAutenticacion.verificaToken, (req, res) => {
 
     Hospitalizacion.find({ usuario: idMedico })
         .populate('usuario', 'nombre email')
+        .populate('medico', '_id nombre')
         .exec(
             (err, hospitalizaciones) => {
                 if (err) {

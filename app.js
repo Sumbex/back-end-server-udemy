@@ -44,7 +44,7 @@ var configExamenesRoutes = require('./routes/configExamen');
 var eventosRoutes = require('./routes/eventos');
 
 //Conexion a la BD
-mongoose.connection.openUri('mongodb://157.230.180.192:27017/hospitalDB', { useNewUrlParser: true, useUnifiedTopology: true, user:'AdminClinica', pass:'N_30_M0ng0Cl1n1ca-2710.Do', authSource:'admin' }, (err, res) => {
+mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', (err, res) => {
     if (err) throw err;
     console.log('Base de datos: \x1b[32m%s\x1b[0m', 'online');
 });

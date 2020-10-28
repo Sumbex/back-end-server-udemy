@@ -10,7 +10,8 @@ var atencionSchema = new Schema({
     indicaciones: { type: String, required: false },
     diagnostico: { type: String, required: false },
     estado: { type: Number, required: false },
-    usuario: { type: Schema.Types.ObjectId, ref: 'Usuario' }
+    usuario: { type: Schema.Types.ObjectId, ref: 'Usuario' },
+    medico: { type: Schema.Types.ObjectId, ref: 'Medico' }
 },
     {
         timestamps: true,
