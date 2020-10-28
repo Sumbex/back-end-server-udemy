@@ -8,12 +8,11 @@ var soliExamenSchema = new Schema({
     datos: { type: String, required: false },
     estadoSolicitud: { type: Number, required: true },
     img: { type: String, required: false },
-    usuario: { type: Schema.Types.ObjectId, ref: 'Usuario' }
-},
-    {
-        timestamps: true,
-        collection: 'soliExamenes'
-    }
-);
+    usuario: { type: Schema.Types.ObjectId, ref: 'Usuario' },
+    medico: { type: Schema.Types.ObjectId, ref: 'Medico' }
+}, {
+    timestamps: true,
+    collection: 'soliExamenes'
+});
 
 module.exports = mongoose.model('SoliExamen', soliExamenSchema);

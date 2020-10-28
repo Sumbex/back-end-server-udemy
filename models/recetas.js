@@ -9,12 +9,11 @@ var itemSchema = new Schema({
 
 var recetaSchema = new Schema({
     usuario: { type: Schema.Types.ObjectId, ref: 'Usuario' },
+    medico: { type: Schema.Types.ObjectId, ref: 'Medico' },
     remedios: [itemSchema]
-},
-    {
-        timestamps: true,
-        collection: 'recetas'
-    }
-);
+}, {
+    timestamps: true,
+    collection: 'recetas'
+});
 
 module.exports = mongoose.model('Receta', recetaSchema);

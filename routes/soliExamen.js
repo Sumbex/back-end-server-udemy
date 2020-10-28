@@ -12,12 +12,15 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
 
     var body = req.body;
 
+    /* console.log(body); */
+
     var solicitud = new SoliExamen({
         tipoExamen: body.tipoExamen,
         fechaExamen: body.fechaExamen,
         datos: body.datos,
         estadoSolicitud: 1,
-        usuario: body.usuario
+        usuario: body.usuario,
+        medico: req.medico_id
     });
 
     solicitud.save((err, solicitudGuardada) => {
@@ -45,6 +48,7 @@ app.get('/PorPaciente', mdAutenticacion.verificaToken, (req, res) => {
     SoliExamen.find({ usuario: idPaciente })
         .populate('usuario', 'nombre email')
         .populate('tipoExamen')
+        .populate('medicos', '_id nombre')
         .exec(
             (err, solicitudes) => {
                 if (err) {
@@ -103,6 +107,7 @@ app.get('/:id', mdAutenticacion.verificaToken, (req, res) => {
     SoliExamen.findById(id)
         .populate('usuario')
         .populate('tipoExamen')
+        .populate('medicos', '_id nombre')
         .exec((err, solicitud) => {
             if (err) {
                 return res.status(500).json({
@@ -110,19 +115,20 @@ app.get('/:id', mdAutenticacion.verificaToken, (req, res) => {
                     mensaje: 'Error al buscar la solicitud',
                     errors: err
                 });
-            } if (!solicitud) {
+            }
+            if (!solicitud) {
                 return res.status(400).json({
                     ok: false,
                     mensaje: `La solicitud con el id: ${id} no existe`,
                     errors: { message: 'No existe una solicitud con ese ID' }
                 });
             }
-    
+
             return res.status(200).json({
                 ok: true,
                 solicitud: solicitud
             });
-    
+
         });
 
 });
@@ -133,6 +139,7 @@ app.get('/', mdAutenticacion.verificaToken, (req, res) => {
     SoliExamen.find()
         .populate('usuario', 'nombre email')
         .populate('tipoExamen')
+        .populate('medicos', '_id nombre')
         .exec(
             (err, solicitudes) => {
                 if (err) {
