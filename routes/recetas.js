@@ -14,7 +14,7 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
     var receta = new Receta({
         remedios: body.remedios,
         usuario: body.usuario,
-        medico: req.medico_id
+        medico: req.medico._id
     });
 
     receta.save((err, recetaGuardada) => {
